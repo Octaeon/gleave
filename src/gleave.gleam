@@ -1,38 +1,23 @@
-/// Exit the program with the given status code.
+/// Exit the program with the given exit code.
 ///
-/// As on Erlang targets this function directly calls the [halt](https://www.erlang.org/doc/apps/erts/erlang.html#halt/1) function,
+/// As on Erlang targets this function directly calls the [`halt`](https://www.erlang.org/doc/apps/erts/erlang.html#halt/1) function,
 /// passing in a negative integer will cause a runtime error.
+///
+/// In contrast, on JavaScript, the external function [`node:process.exit`](https://nodejs.org/api/process.html#processexitcode), if passed a
+/// negative integer, will always return an exit code of 127, and if passed a non-negative integer **status**,
+/// will return an exit code of **status** modulo 256.
 ///
 /// ## Examples
 /// ```gleam
 /// gleave.exit(1)
-/// // -> exits with status code 1
+/// // -> Exits with status code 1
 /// gleave.exit(-1)
-/// // -> JavaScript will exit with status code 255
-/// // -> Erlang will crash with erlang:error(Badarg)
+/// // -> JavaScript will exit with exit code 127
+/// // -> Erlang will crash with "erlang:error(Badarg)"
 /// ```
 @external(erlang, "erlang", "halt")
 @external(javascript, "node:process", "exit")
 pub fn exit(status: Int) -> Nil
-
-/// Runtime safe function to exit the program with the given status code.
-///
-/// To ensure runtime safety on both JavaScript Node.js and Erlang targets,
-/// the absolute value of the status number passed in is passed to the external functions.
-///
-/// ## Examples
-/// ```gleam
-/// gleave.exit(1)
-/// // -> exits with status code 1
-/// gleave.exit(-1)
-/// // -> also exits with status code 1
-/// ```
-pub fn safe_exit(status: Int) -> Nil {
-  case status >= 0 {
-    True -> exit(status)
-    False -> exit(-1 * status)
-  }
-}
 //
 // The implementaiton of `exit` is taken almost entirely from glint (https://github.com/TanklesXL/glint), with the
 // addition of the status code argument. You can find its license below.
